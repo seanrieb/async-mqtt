@@ -49,7 +49,6 @@ try:
 except ImportError:
     class micropython:
         native = staticmethod(lambda fn: fn)
-from .async_dns import resolve as async_dns_resolve
 
 # Create a raw reference generator type since 'types' module doesn't exist
 GeneratorType = type((x for x in []))
