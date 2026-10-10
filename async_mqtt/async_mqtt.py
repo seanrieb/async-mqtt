@@ -36,6 +36,9 @@ Example:
     asyncio.run(main())
 """
 
+# Author: Sean Rieb
+# License: MIT
+
 try:
     import uasyncio as asyncio
 except ImportError:

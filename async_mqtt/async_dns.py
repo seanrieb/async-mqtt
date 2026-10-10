@@ -17,6 +17,9 @@ Example::
     asyncio.run(main())
 """
 
+# Author: Sean Rieb
+# License: MIT
+
 import asyncio
 import socket
 import struct

@@ -9,7 +9,7 @@ description = "Lightweight asyncio MQTT 3.1.1 client with standalone asynchronou
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [{name = "Project contributors"}]
+authors = [{name = "Sean Rieb"}]
 classifiers = ["Programming Language :: Python :: 3", "Programming Language :: Python :: Implementation :: MicroPython", "Topic :: Internet"]
 
 [tool.setuptools]

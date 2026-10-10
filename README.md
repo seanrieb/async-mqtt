@@ -14,17 +14,15 @@ Lightweight MicroPython **MQTT 3.1.1** client using asyncio streams, bundled wit
 
 ## Install on MicroPython
 
-Once you publish this repository to GitHub, replace `YOUR_USER` below with your account or organization:
-
 ```sh
-mpremote mip install github:YOUR_USER/async-mqtt
+mpremote mip install github:seanrieb/async-mqtt
 ```
 
 Alternatively, from a network-enabled MicroPython REPL:
 
 ```python
 import mip
-mip.install("github:YOUR_USER/async-mqtt")
+mip.install("github:seanrieb/async-mqtt")
 ```
 
 For reproducibility after a GitHub release, pin the installation to a tag such as `v0.1.0` using the installer's version parameter.
