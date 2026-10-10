@@ -1,0 +1,17 @@
+{
+  "urls": [
+    [
+      "async_mqtt/__init__.py",
+      "async_mqtt/__init__.py"
+    ],
+    [
+      "async_mqtt/async_mqtt.py",
+      "async_mqtt/async_mqtt.py"
+    ],
+    [
+      "async_mqtt/async_dns.py",
+      "async_mqtt/async_dns.py"
+    ]
+  ],
+  "version": "0.1.0"
+}
