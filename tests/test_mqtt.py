@@ -80,7 +80,7 @@ def test_missing_pingresp_disconnects_and_notifies():
         client._writer = writer
         client._closed.clear()
         await client._keepalive_loop()
-        assert writer.packets == [b"\\xc0\\x00"]
+        assert writer.packets == [bytes((0xC0, 0))]
         assert writer.closed
         assert not client.connected
         assert client._closed.is_set()
@@ -103,7 +103,7 @@ def test_immediate_pingresp_during_send_succeeds():
         task = asyncio.create_task(client._keepalive_loop())
         await asyncio.sleep(1.07)
         assert client.connected
-        assert writer.packets == [b"\\xc0\\x00"]
+        assert writer.packets == [bytes((0xC0, 0))]
         task.cancel()
         try:
             await task
