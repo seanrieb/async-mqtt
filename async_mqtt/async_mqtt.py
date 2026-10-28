@@ -166,6 +166,8 @@ class MQTTClient:
         self._writer = None
         self._reader_task = None
         self._ping_task = None
+        self._ping_response = asyncio.Event()
+        self._ping_outstanding = False
         self._write_lock = asyncio.Lock()
         self._closed = asyncio.Event()
         self._closed.set()
@@ -268,6 +270,8 @@ class MQTTClient:
             return
         self._stopping = False
         self._closed.clear()
+        self._ping_outstanding = False
+        self._ping_response.clear()
         broker = [self.host]
         if self.resolve is not None:
             broker = await self.resolve(self.host)
@@ -338,6 +342,8 @@ class MQTTClient:
                 task.cancel()
         self._reader_task = None
         self._ping_task = None
+        self._ping_outstanding = False
+        self._ping_response.clear()
 
         for waiter in self._waiters.values():
             waiter["error"] = error or MQTTConnectionError("disconnected")
@@ -349,10 +355,13 @@ class MQTTClient:
                 writer.close()
                 wait_closed = getattr(writer, "wait_closed", None)
                 if wait_closed is not None:
-                    await wait_closed()
+                    await _wait_for(wait_closed(), self.response_timeout)
             except Exception:
                 pass
-        self._closed.set()
+            finally:
+                self._closed.set()
+        else:
+            self._closed.set()
         if was_open and error is not None and self.on_disconnect is not None:
             await _maybe_await(self.on_disconnect(self, error))
 
@@ -372,7 +381,17 @@ class MQTTClient:
         try:
             while self._writer is not None:
                 await asyncio.sleep(max(1, self.keepalive // 2))
-                await self._send(0xC0)
+                if self._writer is None:
+                    break
+                self._ping_response.clear()
+                self._ping_outstanding = True
+                try:
+                    await _wait_for(self._send(0xC0), self.response_timeout)
+                    await _wait_for(self._ping_response.wait(), self.response_timeout)
+                except Exception as exc:
+                    raise MQTTConnectionError("PINGRESP timeout or PINGREQ send failed: %r" % (exc,))
+                finally:
+                    self._ping_outstanding = False
         except Exception as exc:
             if self._writer is not None:
                 await self._close_transport(exc)
@@ -423,6 +442,10 @@ class MQTTClient:
             return
 
         if packet_type == 13:  # PINGRESP
+            if first != 0xD0 or body:
+                raise MQTTProtocolError("malformed PINGRESP")
+            if self._ping_outstanding:
+                self._ping_response.set()
             return
 
         if packet_type == 14:  # Server DISCONNECT (MQTT 5 brokers may send it)
