@@ -66,6 +66,25 @@ client = MQTTClient("broker.example.org", resolve=resolver.resolve)
 
 The DNS utility is separately importable, but installed as part of the same package. It uses UDP and needs a configured DNS server; by default, it uses `1.1.1.1`.
 
+
+## Detecting an unresponsive broker
+
+With MQTT keepalive enabled (default: 60 seconds), the client sends a PINGREQ
+at half the keepalive interval (30 seconds by default), and requires a valid
+PINGRESP within `response_timeout` seconds (10 seconds by default).
+The PINGREQ write is also bounded by that timeout. A missing response or a
+stalled write closes the connection, calls `on_disconnect`, and allows
+`run_forever()` to reconnect using its existing exponential backoff.
+A connection may therefore take up to roughly 40 seconds to detect an
+unresponsive broker with the default settings. Disable keepalive by setting
+`keepalive=0` (not recommended for unattended controllers).
+
+A transport close is also bounded by `response_timeout` so a stuck
+`wait_closed()` cannot indefinitely prevent reconnection. These timeouts
+rely on cooperative asynchronous socket operations and cannot preempt a
+blocking native socket driver; prefer lwIP-backed MicroPython for reliable
+async operation.
+
 ## Development (macOS/Linux, CPython)
 
 ```sh
